@@ -1,0 +1,24 @@
+@Clearance = http://localhost:5102
+
+### Documents needed for a passport
+GET {{Clearance}}/api/requirements/PASSPORT
+Accept: application/json
+
+### Clearance status of appointment 1
+GET {{Clearance}}/api/appointments/1/clearance
+Accept: application/json
+
+### Submit documents for appointment 1 (returns 202 at once; the worker verifies in the background)
+POST {{Clearance}}/api/appointments/1/submissions
+Content-Type: application/json
+
+{
+  "documents": [
+    { "documentType": "ID_COPY", "certifiedOn": "2026-10-20" },
+    { "documentType": "PASSPORT_PHOTO" }
+  ]
+}
+
+### Clearance status for several appointments at once
+GET {{Clearance}}/api/clearances?appointmentIds=1&appointmentIds=2
+Accept: application/json
