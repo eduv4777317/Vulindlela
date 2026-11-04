@@ -1,0 +1,36 @@
+@Booking = http://localhost:5101
+
+### List branches
+GET {{Booking}}/api/branches
+Accept: application/json
+
+### Available slots at branch 1 for the next 7 days
+GET {{Booking}}/api/branches/1/slots?days=7
+Accept: application/json
+
+### Book a slot (use a slot id from the call above)
+POST {{Booking}}/api/appointments
+Content-Type: application/json
+
+{
+  "slotId": 1,
+  "citizenId": "9001015009086",
+  "serviceType": "PASSPORT"
+}
+
+### Book the same slot again: expect 409 Conflict
+POST {{Booking}}/api/appointments
+Content-Type: application/json
+
+{
+  "slotId": 1,
+  "citizenId": "8502205800086",
+  "serviceType": "ID_APPLICATION"
+}
+
+### A citizen's appointments
+GET {{Booking}}/api/appointments?citizenId=9001015009086
+Accept: application/json
+
+### Cancel appointment 1 (the slot becomes free again)
+DELETE {{Booking}}/api/appointments/1
