@@ -1,6 +1,0 @@
-@Vulindlela_HostAddress = http://localhost:5243
-
-GET {{Vulindlela_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
