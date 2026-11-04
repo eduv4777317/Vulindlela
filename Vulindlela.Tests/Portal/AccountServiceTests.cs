@@ -13,10 +13,12 @@ namespace Vulindlela.Tests.Portal
         private readonly SqliteConnection _connection;
         private readonly PortalDBContext _db;
         private readonly AccountService _service;
+        private readonly string _password = Guid.NewGuid().ToString();
+        private readonly string _otherPassword = Guid.NewGuid().ToString();
 
         public AccountServiceTests()
         {
-            _connection = new SqliteConnection("Data Source=:memory:");
+            _connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = ":memory:" }.ToString());
             _connection.Open();
             _db = new PortalDBContext(new DbContextOptionsBuilder<PortalDBContext>().UseSqlite(_connection).Options);
             _db.Database.EnsureCreated();
@@ -26,9 +28,9 @@ namespace Vulindlela.Tests.Portal
         [Fact]
         public async Task CorrectPassword_SignsIn()
         {
-            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, Roles.Citizen, "Thandi-Demo-2026");
+            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, Roles.Citizen, _password);
 
-            var signIn = await _service.SignInAsync(TestCitizens.Thandi, "Thandi-Demo-2026");
+            var signIn = await _service.SignInAsync(TestCitizens.Thandi, _password);
 
             Assert.True(signIn.Succeeded);
             Assert.Equal(TestCitizens.Thandi, signIn.Account!.CitizenId);
@@ -37,9 +39,9 @@ namespace Vulindlela.Tests.Portal
         [Fact]
         public async Task WrongPassword_IsRefused()
         {
-            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, Roles.Citizen, "Thandi-Demo-2026");
+            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, Roles.Citizen, _password);
 
-            var signIn = await _service.SignInAsync(TestCitizens.Thandi, "Thandi-Demo-2027");
+            var signIn = await _service.SignInAsync(TestCitizens.Thandi, _otherPassword);
 
             Assert.False(signIn.Succeeded);
         }
@@ -47,7 +49,7 @@ namespace Vulindlela.Tests.Portal
         [Fact]
         public async Task UnknownUser_IsRefused()
         {
-            var signIn = await _service.SignInAsync(TestCitizens.Sipho, "Sipho-Demo-2026");
+            var signIn = await _service.SignInAsync(TestCitizens.Sipho, _password);
 
             Assert.False(signIn.Succeeded);
         }
@@ -55,20 +57,20 @@ namespace Vulindlela.Tests.Portal
         [Fact]
         public async Task PasswordIsNotStoredInPlainText()
         {
-            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, Roles.Citizen, "Thandi-Demo-2026");
+            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, Roles.Citizen, _password);
 
             var account = await _db.Accounts.SingleAsync();
 
             Assert.NotEmpty(account.PasswordSalt);
-            Assert.DoesNotContain("Thandi-Demo-2026", Convert.ToBase64String(account.PasswordHash));
-            Assert.DoesNotContain("Thandi-Demo-2026", System.Text.Encoding.UTF8.GetString(account.PasswordHash));
+            Assert.DoesNotContain(_password, Convert.ToBase64String(account.PasswordHash));
+            Assert.DoesNotContain(_password, System.Text.Encoding.UTF8.GetString(account.PasswordHash));
         }
 
         [Fact]
         public async Task TwoAccountsWithTheSamePassword_GetDifferentSaltsAndHashes()
         {
-            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, Roles.Citizen, "Same-Password-1");
-            await _service.CreateAccountAsync(TestCitizens.Sipho, "Sipho", TestCitizens.Sipho, Roles.Citizen, "Same-Password-1");
+            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, Roles.Citizen, _password);
+            await _service.CreateAccountAsync(TestCitizens.Sipho, "Sipho", TestCitizens.Sipho, Roles.Citizen, _password);
 
             var accounts = await _db.Accounts.ToListAsync();
 
@@ -79,8 +81,8 @@ namespace Vulindlela.Tests.Portal
         [Fact]
         public async Task RegisteredCitizen_CanSignIn()
         {
-            var outcome = await _service.RegisterCitizenAsync(TestCitizens.Thandi, "Thandi", "Thandi-Demo-2026");
-            var signIn = await _service.SignInAsync(TestCitizens.Thandi, "Thandi-Demo-2026");
+            var outcome = await _service.RegisterCitizenAsync(TestCitizens.Thandi, "Thandi", _password);
+            var signIn = await _service.SignInAsync(TestCitizens.Thandi, _password);
 
             Assert.Equal(RegisterOutcome.Registered, outcome);
             Assert.True(signIn.Succeeded);
@@ -89,20 +91,20 @@ namespace Vulindlela.Tests.Portal
         [Fact]
         public async Task SameIdNumber_CannotRegisterTwice()
         {
-            await _service.RegisterCitizenAsync(TestCitizens.Thandi, "Thandi", "Thandi-Demo-2026");
+            await _service.RegisterCitizenAsync(TestCitizens.Thandi, "Thandi", _password);
 
-            var second = await _service.RegisterCitizenAsync(TestCitizens.Thandi, "Someone else", "Other-Password-1");
+            var second = await _service.RegisterCitizenAsync(TestCitizens.Thandi, "Someone else", _otherPassword);
 
             Assert.Equal(RegisterOutcome.AlreadyRegistered, second);
-            Assert.True((await _service.SignInAsync(TestCitizens.Thandi, "Thandi-Demo-2026")).Succeeded);
+            Assert.True((await _service.SignInAsync(TestCitizens.Thandi, _password)).Succeeded);
         }
 
         [Fact]
         public async Task RegisteredCitizen_GetsTheCitizenRole()
         {
-            await _service.RegisterCitizenAsync(TestCitizens.Thandi, "Thandi", "Thandi-Demo-2026");
+            await _service.RegisterCitizenAsync(TestCitizens.Thandi, "Thandi", _password);
 
-            var signIn = await _service.SignInAsync(TestCitizens.Thandi, "Thandi-Demo-2026");
+            var signIn = await _service.SignInAsync(TestCitizens.Thandi, _password);
 
             Assert.Equal(Roles.Citizen, signIn.Account!.Role);
         }
@@ -112,7 +114,7 @@ namespace Vulindlela.Tests.Portal
         [InlineData("12345")]
         public async Task InvalidIdNumber_CannotRegister(string citizenId)
         {
-            var outcome = await _service.RegisterCitizenAsync(citizenId, "Thandi", "Thandi-Demo-2026");
+            var outcome = await _service.RegisterCitizenAsync(citizenId, "Thandi", _password);
 
             Assert.Equal(RegisterOutcome.InvalidCitizenId, outcome);
         }

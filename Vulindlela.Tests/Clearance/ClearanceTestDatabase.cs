@@ -10,8 +10,12 @@ namespace Vulindlela.Tests.Clearance
 {
     public sealed class ClearanceTestDatabase : IDisposable
     {
-        private readonly string _connectionString =
-            $"Data Source=clearance-test-{Guid.NewGuid():N};Mode=Memory;Cache=Shared";
+        private readonly string _connectionString = new SqliteConnectionStringBuilder
+        {
+            DataSource = $"clearance-test-{Guid.NewGuid():N}",
+            Mode = SqliteOpenMode.Memory,
+            Cache = SqliteCacheMode.Shared
+        }.ToString();
 
         private readonly SqliteConnection _keepAlive;
 

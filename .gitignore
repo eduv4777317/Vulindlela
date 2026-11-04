@@ -7,6 +7,4 @@ obj/
 *.db
 *.db-shm
 *.db-wal
-appsettings.Development.json
-appsettings.Production.json
-secrets.json
+ecrets.json
