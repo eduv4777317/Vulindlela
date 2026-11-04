@@ -24,6 +24,9 @@ namespace Vulindlela.Booking.Api.Data.Repositories
 
         Task<InsertAppointmentResult> InsertAppointmentAsync(Appointment appointment);
 
+        Task AddAccessLogEntryAsync(AccessLogEntry entry);
+        Task<IReadOnlyList<AccessLogEntry>> GetAccessLogAsync(string citizenId);
+
         Task SaveChangesAsync();
     }
 }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Vulindlela.Booking.Api.Common;
 using Vulindlela.Booking.Api.Contracts;
 using Vulindlela.Booking.Api.Models;
 using Vulindlela.Booking.Api.Services;
@@ -49,7 +50,7 @@ namespace Vulindlela.Booking.Api.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<AppointmentResponse>> GetById(int id)
         {
-            var appointment = await _bookingService.GetAppointmentAsync(id);
+            var appointment = await _bookingService.GetAppointmentAsync(id, AccessHeaders.FromRequest(Request));
             if (appointment is null)
             {
                 return NotFound();
@@ -61,7 +62,7 @@ namespace Vulindlela.Booking.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AppointmentResponse>>> GetForCitizen([FromQuery] string citizenId)
         {
-            var appointments = await _bookingService.GetAppointmentsForCitizenAsync(citizenId);
+            var appointments = await _bookingService.GetAppointmentsForCitizenAsync(citizenId, AccessHeaders.FromRequest(Request));
             var slots = (await _bookingService.GetSlotsAsync(appointments.Select(a => a.SlotId).Distinct().ToList()))
                 .ToDictionary(s => s.Id);
             return Ok(appointments.Select(a => a.ToResponse(slots.GetValueOrDefault(a.SlotId))));

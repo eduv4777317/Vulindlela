@@ -97,6 +97,22 @@ namespace Vulindlela.Booking.Api.Data.Repositories
             }
         }
 
+        public async Task AddAccessLogEntryAsync(AccessLogEntry entry)
+        {
+            _bookingDBContext.AccessLog.Add(entry);
+            await _bookingDBContext.SaveChangesAsync();
+        }
+
+        public async Task<IReadOnlyList<AccessLogEntry>> GetAccessLogAsync(string citizenId)
+        {
+            return await _bookingDBContext.AccessLog
+                .AsNoTracking()
+                .Where(e => e.CitizenId == citizenId)
+                .OrderByDescending(e => e.AccessedAt)
+                .ThenByDescending(e => e.Id)
+                .ToListAsync();
+        }
+
         public async Task SaveChangesAsync()
         {
             await _bookingDBContext.SaveChangesAsync();

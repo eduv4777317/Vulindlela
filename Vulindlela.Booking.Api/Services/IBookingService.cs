@@ -10,9 +10,11 @@ namespace Vulindlela.Booking.Api.Services
 
         Task<BookingResult> BookAppointmentAsync(int slotId, string citizenId, string serviceType);
 
-        Task<Appointment?> GetAppointmentAsync(int id);
+        Task<Appointment?> GetAppointmentAsync(int id, AccessContext reader);
 
-        Task<IReadOnlyList<Appointment>> GetAppointmentsForCitizenAsync(string citizenId);
+        Task<IReadOnlyList<Appointment>> GetAppointmentsForCitizenAsync(string citizenId, AccessContext reader);
+
+        Task<IReadOnlyList<AccessLogEntry>> GetAccessLogAsync(string citizenId);
 
         Task<IReadOnlyList<Slot>> GetSlotsAsync(IReadOnlyCollection<int> slotIds);
 

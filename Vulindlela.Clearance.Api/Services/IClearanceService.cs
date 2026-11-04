@@ -12,7 +12,9 @@ namespace Vulindlela.Clearance.Api.Services
 
         Task VerifySubmissionAsync(int submissionId, CancellationToken cancellationToken);
 
-        Task<IReadOnlyList<ClearanceStatus>> GetClearancesAsync(IReadOnlyCollection<int> appointmentIds);
+        Task<IReadOnlyList<ClearanceStatus>> GetClearancesAsync(IReadOnlyCollection<int> appointmentIds, AccessContext reader);
+
+        Task<IReadOnlyList<AccessLogEntry>> GetAccessLogAsync(string citizenId);
 
         Task<IReadOnlyList<int>> GetUnfinishedSubmissionIdsAsync();
     }

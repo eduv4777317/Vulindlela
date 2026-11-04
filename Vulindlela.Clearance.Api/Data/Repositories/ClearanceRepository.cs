@@ -67,6 +67,22 @@ namespace Vulindlela.Clearance.Api.Data.Repositories
                 .ToListAsync();
         }
 
+        public async Task AddAccessLogEntriesAsync(IReadOnlyCollection<AccessLogEntry> entries)
+        {
+            _clearanceDBContext.AccessLog.AddRange(entries);
+            await _clearanceDBContext.SaveChangesAsync();
+        }
+
+        public async Task<IReadOnlyList<AccessLogEntry>> GetAccessLogAsync(string citizenId)
+        {
+            return await _clearanceDBContext.AccessLog
+                .AsNoTracking()
+                .Where(e => e.CitizenId == citizenId)
+                .OrderByDescending(e => e.AccessedAt)
+                .ThenByDescending(e => e.Id)
+                .ToListAsync();
+        }
+
         public async Task SaveChangesAsync()
         {
             await _clearanceDBContext.SaveChangesAsync();

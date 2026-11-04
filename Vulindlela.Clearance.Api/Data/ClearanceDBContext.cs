@@ -11,6 +11,7 @@ namespace Vulindlela.Clearance.Api.Data
         public DbSet<DocumentRequirement> Requirements { get; set; }
         public DbSet<Submission> Submissions { get; set; }
         public DbSet<SubmittedDocument> SubmittedDocuments { get; set; }
+        public DbSet<AccessLogEntry> AccessLog { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -39,6 +40,15 @@ namespace Vulindlela.Clearance.Api.Data
             modelBuilder.Entity<SubmittedDocument>(document =>
             {
                 document.Property(d => d.DocumentType).IsRequired().HasMaxLength(32);
+            });
+
+            modelBuilder.Entity<AccessLogEntry>(entry =>
+            {
+                entry.Property(e => e.CitizenId).IsRequired().HasMaxLength(13);
+                entry.Property(e => e.AccessedBy).IsRequired().HasMaxLength(100);
+                entry.Property(e => e.AccessedByRole).IsRequired().HasMaxLength(20);
+                entry.Property(e => e.Reason).IsRequired().HasMaxLength(200);
+                entry.HasIndex(e => e.CitizenId);
             });
         }
     }

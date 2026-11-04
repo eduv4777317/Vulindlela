@@ -10,6 +10,7 @@ namespace Vulindlela.Booking.Api.Data
         public DbSet<Branch> Branches { get; set; }
         public DbSet<Slot> Slots { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<AccessLogEntry> AccessLog { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -34,6 +35,15 @@ namespace Vulindlela.Booking.Api.Data
                 appointment.HasIndex(a => a.SlotId)
                     .IsUnique()
                     .HasFilter($"\"Status\" = {(int)AppointmentStatus.Active}");
+            });
+
+            modelBuilder.Entity<AccessLogEntry>(entry =>
+            {
+                entry.Property(e => e.CitizenId).IsRequired().HasMaxLength(13);
+                entry.Property(e => e.AccessedBy).IsRequired().HasMaxLength(100);
+                entry.Property(e => e.AccessedByRole).IsRequired().HasMaxLength(20);
+                entry.Property(e => e.Reason).IsRequired().HasMaxLength(200);
+                entry.HasIndex(e => e.CitizenId);
             });
         }
     }

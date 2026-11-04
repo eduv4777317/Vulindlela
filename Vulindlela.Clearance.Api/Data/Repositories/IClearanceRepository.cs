@@ -14,6 +14,9 @@ namespace Vulindlela.Clearance.Api.Data.Repositories
         Task<IReadOnlyList<Submission>> GetLatestSubmissionsAsync(IReadOnlyCollection<int> appointmentIds);
         Task<IReadOnlyList<int>> GetSubmissionIdsWithStatusAsync(params SubmissionStatus[] statuses);
 
+        Task AddAccessLogEntriesAsync(IReadOnlyCollection<AccessLogEntry> entries);
+        Task<IReadOnlyList<AccessLogEntry>> GetAccessLogAsync(string citizenId);
+
         Task SaveChangesAsync();
     }
 }

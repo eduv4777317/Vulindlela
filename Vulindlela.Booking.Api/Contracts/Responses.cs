@@ -9,6 +9,8 @@ namespace Vulindlela.Booking.Api.Contracts
 
     public sealed record AppointmentResponse(int Id, int SlotId, int? BranchId, DateTimeOffset? StartsAt, string CitizenId, string ServiceType, string Status);
 
+    public sealed record AccessLogEntryResponse(DateTimeOffset AccessedAt, string AccessedBy, string AccessedByRole, string Reason);
+
     public static class ResponseMapping
     {
         public static BranchResponse ToResponse(this Branch branch) =>
@@ -21,5 +23,8 @@ namespace Vulindlela.Booking.Api.Contracts
             new(appointment.Id, appointment.SlotId, slot?.BranchId,
                 slot is null ? null : Utility.ToLocal(slot.StartsAt),
                 appointment.CitizenId, appointment.ServiceType, appointment.Status.ToString());
+
+        public static AccessLogEntryResponse ToResponse(this AccessLogEntry entry) =>
+            new(Utility.ToLocal(entry.AccessedAt), entry.AccessedBy, entry.AccessedByRole, entry.Reason);
     }
 }

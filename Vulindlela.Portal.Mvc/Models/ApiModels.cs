@@ -35,5 +35,7 @@ namespace Vulindlela.Portal.Mvc.Models
 
     public sealed record SubmissionDto(int SubmissionId, int AppointmentId, string Status);
 
+    public sealed record AccessLogEntryDto(DateTimeOffset AccessedAt, string AccessedBy, string AccessedByRole, string Reason);
+
     public sealed record ProblemDto(string? Title);
 }

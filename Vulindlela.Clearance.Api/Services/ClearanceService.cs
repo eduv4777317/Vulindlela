@@ -89,15 +89,21 @@ namespace Vulindlela.Clearance.Api.Services
             await _clearanceRepository.SaveChangesAsync();
         }
 
-        public async Task<IReadOnlyList<ClearanceStatus>> GetClearancesAsync(IReadOnlyCollection<int> appointmentIds)
+        public async Task<IReadOnlyList<ClearanceStatus>> GetClearancesAsync(IReadOnlyCollection<int> appointmentIds, AccessContext reader)
         {
             var latest = (await _clearanceRepository.GetLatestSubmissionsAsync(appointmentIds))
                 .ToDictionary(s => s.AppointmentId);
 
             var statuses = new List<ClearanceStatus>();
+            var citizensRead = new HashSet<string>();
             foreach (var appointmentId in appointmentIds.Distinct())
             {
                 var appointment = await _clearanceRepository.GetAppointmentAsync(appointmentId);
+                if (appointment is not null)
+                {
+                    citizensRead.Add(appointment.CitizenId);
+                }
+
                 var requirements = appointment is null
                     ? Array.Empty<DocumentRequirement>()
                     : await _clearanceRepository.GetRequirementsAsync(appointment.ServiceType);
@@ -109,7 +115,27 @@ namespace Vulindlela.Clearance.Api.Services
                     requirements));
             }
 
+            if (citizensRead.Count > 0)
+            {
+                var now = DateTime.UtcNow;
+                await _clearanceRepository.AddAccessLogEntriesAsync(citizensRead
+                    .Select(citizenId => new AccessLogEntry
+                    {
+                        CitizenId = citizenId,
+                        AccessedBy = reader.AccessedBy,
+                        AccessedByRole = reader.AccessedByRole,
+                        Reason = reader.Reason,
+                        AccessedAt = now
+                    })
+                    .ToList());
+            }
+
             return statuses;
+        }
+
+        public Task<IReadOnlyList<AccessLogEntry>> GetAccessLogAsync(string citizenId)
+        {
+            return _clearanceRepository.GetAccessLogAsync(citizenId?.Trim() ?? "");
         }
 
         public Task<IReadOnlyList<int>> GetUnfinishedSubmissionIdsAsync()

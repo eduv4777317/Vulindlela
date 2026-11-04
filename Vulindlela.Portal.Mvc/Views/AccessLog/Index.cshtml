@@ -1,0 +1,57 @@
+@model AccessLogViewModel
+@{
+    ViewData["Title"] = "Access log";
+}
+<h1>Access log</h1>
+
+@if (Model.IsOfficial)
+{
+    <form asp-action="Index" method="get">
+        <label for="citizenId">Citizen ID number</label>
+        <input id="citizenId" name="citizenId" value="@Model.CitizenId" required />
+        <button type="submit">Show access log</button>
+    </form>
+}
+else
+{
+    <p>Every time someone reads your record, it is listed here: who it was, when, and why.</p>
+}
+
+@if (Model.CitizenId is null)
+{
+    return;
+}
+
+@if (Model.BookingUnavailable)
+{
+    <p class="notice">The booking part of the log is unavailable right now. Please try again in a few minutes.</p>
+}
+@if (Model.ClearanceUnavailable)
+{
+    <p class="notice">The document clearance part of the log is unavailable right now. Please try again in a few minutes.</p>
+}
+
+@if (Model.Rows.Count == 0)
+{
+    <p>Nobody has read this record yet.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr><th>When</th><th>Who</th><th>Role</th><th>Why</th><th>Service</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Rows)
+            {
+                <tr>
+                    <td>@row.AccessedAt.ToOffset(TimeSpan.FromHours(2)).ToString("ddd d MMM yyyy, HH:mm:ss")</td>
+                    <td>@row.AccessedBy</td>
+                    <td>@row.AccessedByRole</td>
+                    <td>@row.Reason</td>
+                    <td>@row.Source</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

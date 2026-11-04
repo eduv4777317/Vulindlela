@@ -43,6 +43,24 @@ namespace Vulindlela.Portal.Mvc.Models
         public bool AnyVerificationInProgress => Rows.Any(r => r.Clearance?.Status is "Queued" or "Verifying");
     }
 
+    public sealed class AccessLogRow
+    {
+        public DateTimeOffset AccessedAt { get; init; }
+        public string AccessedBy { get; init; } = "";
+        public string AccessedByRole { get; init; } = "";
+        public string Reason { get; init; } = "";
+        public string Source { get; init; } = "";
+    }
+
+    public sealed class AccessLogViewModel
+    {
+        public bool IsOfficial { get; init; }
+        public string? CitizenId { get; init; }
+        public bool BookingUnavailable { get; init; }
+        public bool ClearanceUnavailable { get; init; }
+        public List<AccessLogRow> Rows { get; init; } = new();
+    }
+
     public sealed class DocumentRow
     {
         public string DocumentType { get; set; } = "";

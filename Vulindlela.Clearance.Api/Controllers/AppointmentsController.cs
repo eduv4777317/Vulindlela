@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Vulindlela.Clearance.Api.Common;
 using Vulindlela.Clearance.Api.Contracts;
 using Vulindlela.Clearance.Api.Services;
 
@@ -27,7 +28,7 @@ namespace Vulindlela.Clearance.Api.Controllers
         [HttpGet("{appointmentId:int}/clearance")]
         public async Task<ActionResult<ClearanceResponse>> GetClearance(int appointmentId)
         {
-            var status = (await _clearanceService.GetClearancesAsync(new[] { appointmentId })).Single();
+            var status = (await _clearanceService.GetClearancesAsync(new[] { appointmentId }, AccessHeaders.FromRequest(Request))).Single();
             if (!status.AppointmentKnown)
             {
                 return NotFound();
