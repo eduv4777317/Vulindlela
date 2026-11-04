@@ -48,7 +48,7 @@ Each service is split into Controllers, Services (business rules) and Data (EF C
 You need the [.NET 10 SDK](https://dotnet.microsoft.com/download). Nothing else: the databases are SQLite files that are created and seeded on first run.
 
 ```bash
-git clone <this repository>
+git clone [Vulindlela](https://github.com/eduv4777317/Vulindlela.git)
 cd Vulindlela
 dotnet build
 ```
