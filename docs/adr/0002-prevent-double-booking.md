@@ -35,11 +35,11 @@ The booking code does not rely on a prior check for correctness. `BookingService
 
 **What we gain.** The guarantee is enforced where the data lives, so it holds for every code path, including ones written later by someone who has not read this ADR.
 
-**What we accept.** The rule lives in the schema, not in the business logic layer, so a reader of the service code will not see it. It needs a comment at the call site and the concurrency test to protect it. The guarantee is only as real as the test database: a fake repository that ignores constraints would pass while the real system fails, so the tests run against real SQLite. A unique index cannot express a capacity above one, so if slots ever hold several citizens this design is replaced by an atomic conditional update on a counter. Losing requests pay for a failed insert and an exception, which is acceptable at this volume but is exception-driven control flow. Finally, the filter depends on the stored number for `Active`: if someone reorders the enum or removes the pinned values, the index silently counts the wrong rows, and the `Status` column shows 0 and 1 rather than words when you inspect `booking.db`.
+**What we accept.** The rule lives in the schema, not in the business logic layer, so a reader of the service code will not see it. This ADR and the tests are what protect it. The guarantee is only as real as the test database: a fake repository that ignores constraints would pass while the real system fails, so the tests run against real SQLite. A unique index cannot express a capacity above one, so if slots ever hold several citizens this design is replaced by an atomic conditional update on a counter. Losing requests pay for a failed insert and an exception, which is acceptable at this volume but is exception-driven control flow. Finally, the filter depends on the stored number for `Active`: if someone reorders the enum or removes the pinned values, the index silently counts the wrong rows, and the `Status` column shows 0 and 1 rather than words when you inspect `booking.db`.
 
 ## Evidence
 
-`DoubleBookingTests` in `tests/Vulindlela.Booking.Tests` runs against a real in-memory SQLite database:
+`DoubleBookingTests` in `Vulindlela.Tests/Booking` runs against a real in-memory SQLite database:
 
 - `ConcurrentBookingsForOneSlot_ExactlyOneSucceeds` releases 2, 20 and 50 simultaneous bookings at one slot and asserts that exactly one succeeds and exactly one active appointment exists.
 - `SecondActiveAppointmentForSameSlot_IsRefusedByTheDatabase` skips the service's check and inserts through the repository twice, so only the unique index can stop the second insert.
