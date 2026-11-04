@@ -1,0 +1,84 @@
+@model MyAppointmentsViewModel
+@{
+    ViewData["Title"] = "My appointments";
+}
+@section Head {
+    @if (Model.AnyVerificationInProgress)
+    {
+        <meta http-equiv="refresh" content="3" />
+    }
+}
+<h1>My appointments</h1>
+
+<form asp-action="Index" method="get" class="inline">
+    <label for="citizenId">South African ID number</label>
+    <input id="citizenId" name="citizenId" value="@Model.CitizenId" maxlength="13" required />
+    <button type="submit">Show</button>
+</form>
+
+@if (TempData["Message"] is string message)
+{
+    <p class="info">@message</p>
+}
+
+@if (Model.BookingUnavailable)
+{
+    <p class="notice">Your appointments are unavailable right now. Please try again in a few minutes.</p>
+}
+else if (Model.CitizenId is not null)
+{
+    @if (Model.ClearanceUnavailable)
+    {
+        <p class="notice">Document checks are unavailable right now. Your appointments are shown below, but their clearance status could not be loaded.</p>
+    }
+
+    @if (Model.Rows.Count == 0)
+    {
+        <p>No appointments found for this ID number.</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr><th>Reference</th><th>When</th><th>Branch</th><th>Service</th><th>Booking</th><th>Documents</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Rows)
+                {
+                    <tr>
+                        <td>@row.Appointment.Id</td>
+                        <td>@row.Appointment.StartsAt?.ToString("ddd d MMM, HH:mm")</td>
+                        <td>@row.BranchName</td>
+                        <td>@row.Appointment.ServiceType</td>
+                        <td>@row.Appointment.Status</td>
+                        <td>
+                            @if (row.Clearance is null)
+                            {
+                                <span class="muted">Unavailable</span>
+                            }
+                            else
+                            {
+                                <span class="status @row.Clearance.Status">@row.Clearance.Status</span>
+                                @if (row.Clearance.Problems.Count > 0)
+                                {
+                                    <ul class="problems">
+                                        @foreach (var problem in row.Clearance.Problems)
+                                        {
+                                            <li>@problem</li>
+                                        }
+                                    </ul>
+                                }
+                            }
+                        </td>
+                        <td>
+                            @if (row.Appointment.Status == "Active" && row.Clearance is not null && row.Clearance.Status != "UnknownAppointment" && row.Clearance.Status != "Cleared")
+                            {
+                                <a asp-action="Documents" asp-route-id="@row.Appointment.Id" asp-route-citizenId="@Model.CitizenId">Submit documents</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}

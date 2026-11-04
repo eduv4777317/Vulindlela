@@ -1,0 +1,43 @@
+@model BookingIndexViewModel
+@{
+    ViewData["Title"] = "Book a slot";
+}
+<h1>Book a slot</h1>
+
+@if (Model.BookingUnavailable)
+{
+    <p class="notice">Booking is unavailable right now. Please try again in a few minutes.</p>
+}
+
+@if (Model.Branches.Count > 0)
+{
+    <h2>Choose a branch</h2>
+    <ul class="choices">
+        @foreach (var branch in Model.Branches)
+        {
+            <li class="@(branch.Id == Model.SelectedBranch?.Id ? "selected" : "")">
+                <a asp-action="Index" asp-route-branchId="@branch.Id">@branch.Name</a>
+            </li>
+        }
+    </ul>
+}
+
+@if (Model.SelectedBranch is not null && !Model.BookingUnavailable)
+{
+    <h2>Free slots at @Model.SelectedBranch.Name</h2>
+    @if (Model.SlotsByDay.Count == 0)
+    {
+        <p>No free slots in the next week.</p>
+    }
+    @foreach (var day in Model.SlotsByDay)
+    {
+        <h3>@day.Key.ToString("dddd d MMMM")</h3>
+        <div class="slots">
+            @foreach (var slot in day)
+            {
+                <a class="slot" asp-action="Book" asp-route-slotId="@slot.Id" asp-route-branchId="@slot.BranchId"
+                   asp-route-startsAt="@slot.StartsAt.ToString("o")">@slot.StartsAt.ToString("HH:mm")</a>
+            }
+        </div>
+    }
+}

@@ -1,0 +1,54 @@
+@model DocumentsViewModel
+@{
+    ViewData["Title"] = "Submit documents";
+}
+<h1>Submit documents for appointment @Model.AppointmentId</h1>
+
+@if (Model.ClearanceUnavailable)
+{
+    <p class="notice">Document checks are unavailable right now. Your booking is safe; please try again in a few minutes.</p>
+}
+@if (Model.Error is not null)
+{
+    <p class="notice">@Model.Error</p>
+}
+
+@if (Model.Rows.Count > 0)
+{
+    <form asp-action="Documents" method="post">
+        <input type="hidden" asp-for="AppointmentId" />
+        <input type="hidden" asp-for="CitizenId" />
+        <table>
+            <thead>
+                <tr><th>I have it</th><th>Document</th><th>Certified on</th><th>Expires on</th></tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.Rows.Count; i++)
+                {
+                    <tr>
+                        <td><input asp-for="Rows[i].Include" /></td>
+                        <td>
+                            @Model.Rows[i].DocumentType
+                            <input type="hidden" asp-for="Rows[i].DocumentType" />
+                            <input type="hidden" asp-for="Rows[i].MustBeCertified" />
+                        </td>
+                        <td>
+                            @if (Model.Rows[i].MustBeCertified)
+                            {
+                                <input asp-for="Rows[i].CertifiedOn" type="date" />
+                            }
+                            else
+                            {
+                                <span class="muted">Not needed</span>
+                            }
+                        </td>
+                        <td><input asp-for="Rows[i].ExpiresOn" type="date" /></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button type="submit">Send for checking</button>
+    </form>
+}
+
+<p><a asp-action="Index" asp-route-citizenId="@Model.CitizenId">Back to my appointments</a></p>

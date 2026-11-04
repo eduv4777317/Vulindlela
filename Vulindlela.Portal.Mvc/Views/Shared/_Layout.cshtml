@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @await RenderSectionAsync("Head", required: false)
+    <title>@ViewData["Title"] - Vulindlela</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav>
+            <a class="brand" asp-controller="Home" asp-action="Index">Vulindlela</a>
+            <a asp-controller="Booking" asp-action="Index">Book a slot</a>
+            <a asp-controller="Appointments" asp-action="Index">My appointments</a>
+        </nav>
+    </header>
+    <main>
+        @RenderBody()
+    </main>
+    <footer>National Civic Services Agency</footer>
+</body>
+</html>
