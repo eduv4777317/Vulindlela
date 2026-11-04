@@ -35,6 +35,8 @@ namespace Vulindlela.Portal.Mvc.Models
 
     public sealed class MyAppointmentsViewModel
     {
+        public bool IsOfficial { get; init; }
+        public string? CitizenId { get; init; }
         public bool BookingUnavailable { get; init; }
         public bool ClearanceUnavailable { get; init; }
         public List<AppointmentRow> Rows { get; init; } = new();
@@ -53,6 +55,7 @@ namespace Vulindlela.Portal.Mvc.Models
     public sealed class DocumentsViewModel
     {
         public int AppointmentId { get; set; }
+        public string? CitizenId { get; set; }
         public bool ClearanceUnavailable { get; set; }
         public string? Error { get; set; }
         public List<DocumentRow> Rows { get; set; } = new();

@@ -7,7 +7,7 @@
     <a class="button" asp-controller="Booking" asp-action="Index">Book a slot</a>
     @if (User.Identity?.IsAuthenticated == true)
     {
-        <a class="button secondary" asp-controller="Appointments" asp-action="Index">My appointments</a>
+        <a class="button secondary" asp-controller="Appointments" asp-action="Index">@(User.IsInRole(Roles.Official) ? "Citizen records" : "My appointments")</a>
     }
     else
     {

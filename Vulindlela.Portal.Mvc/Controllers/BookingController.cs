@@ -49,7 +49,7 @@ namespace Vulindlela.Portal.Mvc.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        [Authorize(Roles = Roles.Citizen)]
         public async Task<IActionResult> Book(int slotId, int branchId, DateTimeOffset startsAt)
         {
             var model = new BookViewModel { SlotId = slotId, BranchId = branchId, StartsAt = startsAt };
@@ -59,7 +59,7 @@ namespace Vulindlela.Portal.Mvc.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]
+        [Authorize(Roles = Roles.Citizen)]
         public async Task<IActionResult> Book(BookViewModel model)
         {
             var citizenId = User.GetCitizenId()!;

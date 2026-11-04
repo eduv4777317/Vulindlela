@@ -26,7 +26,7 @@ namespace Vulindlela.Portal.Mvc.Data.Seedings
             var accounts = _configuration.GetSection("SeedAccounts").Get<List<SeedAccount>>() ?? new List<SeedAccount>();
             foreach (var seed in accounts)
             {
-                await _accountService.CreateAccountAsync(seed.Username, seed.DisplayName, seed.CitizenId, seed.Password);
+                await _accountService.CreateAccountAsync(seed.Username, seed.DisplayName, seed.CitizenId, seed.Role, seed.Password);
             }
         }
     }

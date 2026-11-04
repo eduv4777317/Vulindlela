@@ -14,7 +14,7 @@
             <a asp-controller="Booking" asp-action="Index">Book a slot</a>
             @if (User.Identity?.IsAuthenticated == true)
             {
-                <a asp-controller="Appointments" asp-action="Index">My appointments</a>
+                <a asp-controller="Appointments" asp-action="Index">@(User.IsInRole(Roles.Official) ? "Citizen records" : "My appointments")</a>
                 <span class="signed-in">@User.Identity.Name</span>
                 <form asp-controller="Account" asp-action="SignOut" method="post" class="nav-form">
                     <button type="submit" class="link">Sign out</button>

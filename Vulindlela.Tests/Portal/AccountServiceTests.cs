@@ -26,7 +26,7 @@ namespace Vulindlela.Tests.Portal
         [Fact]
         public async Task CorrectPassword_SignsIn()
         {
-            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, "Thandi-Demo-2026");
+            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, Roles.Citizen, "Thandi-Demo-2026");
 
             var signIn = await _service.SignInAsync(TestCitizens.Thandi, "Thandi-Demo-2026");
 
@@ -37,7 +37,7 @@ namespace Vulindlela.Tests.Portal
         [Fact]
         public async Task WrongPassword_IsRefused()
         {
-            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, "Thandi-Demo-2026");
+            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, Roles.Citizen, "Thandi-Demo-2026");
 
             var signIn = await _service.SignInAsync(TestCitizens.Thandi, "Thandi-Demo-2027");
 
@@ -55,7 +55,7 @@ namespace Vulindlela.Tests.Portal
         [Fact]
         public async Task PasswordIsNotStoredInPlainText()
         {
-            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, "Thandi-Demo-2026");
+            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, Roles.Citizen, "Thandi-Demo-2026");
 
             var account = await _db.Accounts.SingleAsync();
 
@@ -67,8 +67,8 @@ namespace Vulindlela.Tests.Portal
         [Fact]
         public async Task TwoAccountsWithTheSamePassword_GetDifferentSaltsAndHashes()
         {
-            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, "Same-Password-1");
-            await _service.CreateAccountAsync(TestCitizens.Sipho, "Sipho", TestCitizens.Sipho, "Same-Password-1");
+            await _service.CreateAccountAsync(TestCitizens.Thandi, "Thandi", TestCitizens.Thandi, Roles.Citizen, "Same-Password-1");
+            await _service.CreateAccountAsync(TestCitizens.Sipho, "Sipho", TestCitizens.Sipho, Roles.Citizen, "Same-Password-1");
 
             var accounts = await _db.Accounts.ToListAsync();
 
@@ -95,6 +95,16 @@ namespace Vulindlela.Tests.Portal
 
             Assert.Equal(RegisterOutcome.AlreadyRegistered, second);
             Assert.True((await _service.SignInAsync(TestCitizens.Thandi, "Thandi-Demo-2026")).Succeeded);
+        }
+
+        [Fact]
+        public async Task RegisteredCitizen_GetsTheCitizenRole()
+        {
+            await _service.RegisterCitizenAsync(TestCitizens.Thandi, "Thandi", "Thandi-Demo-2026");
+
+            var signIn = await _service.SignInAsync(TestCitizens.Thandi, "Thandi-Demo-2026");
+
+            Assert.Equal(Roles.Citizen, signIn.Account!.Role);
         }
 
         [Theory]
