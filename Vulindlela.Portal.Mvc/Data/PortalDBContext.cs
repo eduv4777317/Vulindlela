@@ -15,7 +15,8 @@ namespace Vulindlela.Portal.Mvc.Data
             {
                 account.Property(a => a.Username).IsRequired().HasMaxLength(64);
                 account.Property(a => a.DisplayName).IsRequired().HasMaxLength(100);
-                account.Property(a => a.CitizenId).IsRequired().HasMaxLength(13);
+                account.Property(a => a.CitizenId).HasMaxLength(13);
+                account.Property(a => a.Role).IsRequired().HasMaxLength(20);
                 account.HasIndex(a => a.Username).IsUnique();
                 account.HasIndex(a => a.CitizenId).IsUnique();
             });

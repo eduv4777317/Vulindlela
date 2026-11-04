@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Vulindlela.Portal.Mvc.Clients;
 using Vulindlela.Portal.Mvc.Data;
@@ -34,8 +35,17 @@ builder.Services
     .AddCookie(options =>
     {
         options.LoginPath = "/Account/SignIn";
+        options.AccessDeniedPath = "/Account/AccessDenied";
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(Policies.CanViewCitizenRecord, policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.AddRequirements(new CitizenRecordAccessRequirement());
+    });
+});
+builder.Services.AddSingleton<IAuthorizationHandler, CitizenRecordAccessHandler>();
 
 builder.Services.AddHttpClient<IBookingApiClient, BookingApiClient>(client =>
 {

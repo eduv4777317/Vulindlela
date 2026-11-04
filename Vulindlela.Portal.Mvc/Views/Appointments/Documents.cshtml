@@ -50,4 +50,4 @@
     </form>
 }
 
-<p><a asp-action="Index">Back to my appointments</a></p>
+<p><a asp-action="Index" asp-route-citizenId="@(User.IsInRole(Roles.Official) ? Model.CitizenId : null)">Back to appointments</a></p>

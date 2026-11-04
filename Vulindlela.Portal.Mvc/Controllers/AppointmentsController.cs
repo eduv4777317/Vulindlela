@@ -11,20 +11,42 @@ namespace Vulindlela.Portal.Mvc.Controllers
     {
         private readonly IBookingApiClient _bookingApi;
         private readonly IClearanceApiClient _clearanceApi;
+        private readonly IAuthorizationService _authorizationService;
 
-        public AppointmentsController(IBookingApiClient bookingApi, IClearanceApiClient clearanceApi)
+        public AppointmentsController(
+            IBookingApiClient bookingApi,
+            IClearanceApiClient clearanceApi,
+            IAuthorizationService authorizationService)
         {
             _bookingApi = bookingApi;
             _clearanceApi = clearanceApi;
+            _authorizationService = authorizationService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? citizenId)
         {
-            var citizenId = User.GetCitizenId()!;
-            var appointments = await _bookingApi.GetAppointmentsAsync(citizenId);
+            var isOfficial = User.IsInRole(Roles.Official);
+            var requestedCitizenId = string.IsNullOrWhiteSpace(citizenId) ? User.GetCitizenId() : citizenId.Trim();
+
+            if (requestedCitizenId is null)
+            {
+                return View(new MyAppointmentsViewModel { IsOfficial = isOfficial });
+            }
+
+            if (!await CanViewAsync(requestedCitizenId))
+            {
+                return Forbid();
+            }
+
+            var appointments = await _bookingApi.GetAppointmentsAsync(requestedCitizenId);
             if (!appointments.Succeeded)
             {
-                return View(new MyAppointmentsViewModel { BookingUnavailable = true });
+                return View(new MyAppointmentsViewModel
+                {
+                    IsOfficial = isOfficial,
+                    CitizenId = requestedCitizenId,
+                    BookingUnavailable = true
+                });
             }
 
             var branches = await _bookingApi.GetBranchesAsync();
@@ -48,6 +70,8 @@ namespace Vulindlela.Portal.Mvc.Controllers
 
             return View(new MyAppointmentsViewModel
             {
+                IsOfficial = isOfficial,
+                CitizenId = requestedCitizenId,
                 ClearanceUnavailable = !clearances.Succeeded,
                 Rows = rows
             });
@@ -57,6 +81,23 @@ namespace Vulindlela.Portal.Mvc.Controllers
         public async Task<IActionResult> Documents(int id)
         {
             var model = new DocumentsViewModel { AppointmentId = id };
+
+            var appointment = await _bookingApi.GetAppointmentAsync(id);
+            if (!appointment.Available)
+            {
+                model.Error = "Your appointment could not be loaded right now. Please try again in a few minutes.";
+                return View(model);
+            }
+            if (!appointment.Succeeded)
+            {
+                return NotFound();
+            }
+            if (!await CanViewAsync(appointment.Value!.CitizenId))
+            {
+                return Forbid();
+            }
+
+            model.CitizenId = appointment.Value.CitizenId;
             var clearance = await _clearanceApi.GetClearanceAsync(id);
 
             if (!clearance.Available)
@@ -81,6 +122,22 @@ namespace Vulindlela.Portal.Mvc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Documents(DocumentsViewModel model)
         {
+            var appointment = await _bookingApi.GetAppointmentAsync(model.AppointmentId);
+            if (!appointment.Available)
+            {
+                model.Error = "Your appointment could not be loaded right now. Please try again in a few minutes.";
+                return View(model);
+            }
+            if (!appointment.Succeeded)
+            {
+                return NotFound();
+            }
+            if (!await CanViewAsync(appointment.Value!.CitizenId))
+            {
+                return Forbid();
+            }
+
+            model.CitizenId = appointment.Value.CitizenId;
             var documents = model.Rows
                 .Where(r => r.Include)
                 .Select(r => new SubmittedDocumentDto(r.DocumentType, r.CertifiedOn, r.ExpiresOn))
@@ -90,12 +147,18 @@ namespace Vulindlela.Portal.Mvc.Controllers
             if (result.Succeeded)
             {
                 TempData["Message"] = "Your documents were received and are being checked. This page updates by itself.";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), new { citizenId = model.CitizenId });
             }
 
             model.ClearanceUnavailable = !result.Available;
             model.Error = result.Available ? result.Error ?? "Your documents could not be submitted." : null;
             return View(model);
+        }
+
+        private async Task<bool> CanViewAsync(string citizenId)
+        {
+            var result = await _authorizationService.AuthorizeAsync(User, citizenId, Policies.CanViewCitizenRecord);
+            return result.Succeeded;
         }
     }
 }

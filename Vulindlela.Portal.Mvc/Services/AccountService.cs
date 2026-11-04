@@ -24,18 +24,19 @@ namespace Vulindlela.Portal.Mvc.Services
                 return RegisterOutcome.InvalidCitizenId;
             }
 
-            var created = await CreateAccountAsync(normalisedCitizenId, displayName, normalisedCitizenId, password);
+            var created = await CreateAccountAsync(normalisedCitizenId, displayName, normalisedCitizenId, Roles.Citizen, password);
             return created == CreateAccountOutcome.Created ? RegisterOutcome.Registered : RegisterOutcome.AlreadyRegistered;
         }
 
-        public async Task<CreateAccountOutcome> CreateAccountAsync(string username, string displayName, string citizenId, string password)
+        public async Task<CreateAccountOutcome> CreateAccountAsync(string username, string displayName, string? citizenId, string role, string password)
         {
             var (hash, salt) = _passwordHasher.Hash(password);
             var account = new Account
             {
                 Username = username.Trim(),
                 DisplayName = displayName.Trim(),
-                CitizenId = citizenId.Trim(),
+                CitizenId = citizenId?.Trim(),
+                Role = role,
                 PasswordHash = hash,
                 PasswordSalt = salt,
                 CreatedAt = DateTime.UtcNow

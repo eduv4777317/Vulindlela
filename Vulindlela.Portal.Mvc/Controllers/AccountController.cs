@@ -52,7 +52,6 @@ namespace Vulindlela.Portal.Mvc.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-
         [HttpGet]
         public IActionResult Register()
         {
@@ -84,6 +83,12 @@ namespace Vulindlela.Portal.Mvc.Controllers
             return RedirectToAction("Index", "Booking");
         }
 
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public new async Task<IActionResult> SignOut()
@@ -98,8 +103,12 @@ namespace Vulindlela.Portal.Mvc.Controllers
             {
                 new(ClaimTypes.NameIdentifier, account.Id.ToString()),
                 new(ClaimTypes.Name, account.DisplayName),
-                new(PortalClaims.CitizenId, account.CitizenId)
+                new(ClaimTypes.Role, account.Role)
             };
+            if (account.CitizenId is not null)
+            {
+                claims.Add(new(PortalClaims.CitizenId, account.CitizenId));
+            }
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             return HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));

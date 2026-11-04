@@ -1,6 +1,6 @@
 @model MyAppointmentsViewModel
 @{
-    ViewData["Title"] = "My appointments";
+    ViewData["Title"] = Model.IsOfficial ? "Citizen records" : "My appointments";
 }
 @section Head {
     @if (Model.AnyVerificationInProgress)
@@ -8,12 +8,25 @@
         <meta http-equiv="refresh" content="3" />
     }
 }
-<h1>My appointments</h1>
+<h1>@ViewData["Title"]</h1>
 
+@if (Model.IsOfficial)
+{
+    <form asp-action="Index" method="get">
+        <label for="citizenId">Citizen ID number</label>
+        <input id="citizenId" name="citizenId" value="@Model.CitizenId" required />
+        <button type="submit">Show appointments</button>
+    </form>
+}
 
 @if (TempData["Message"] is string message)
 {
     <p class="info">@message</p>
+}
+
+@if (Model.CitizenId is null)
+{
+    return;
 }
 
 @if (Model.BookingUnavailable)

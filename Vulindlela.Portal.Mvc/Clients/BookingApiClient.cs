@@ -26,6 +26,9 @@ namespace Vulindlela.Portal.Mvc.Clients
         public Task<ApiResult<AppointmentDto>> BookAsync(BookAppointmentDto request) =>
             ApiCallHelper.SendAsync<AppointmentDto>(() => _httpClient.PostAsJsonAsync("api/appointments", request), _logger);
 
+        public Task<ApiResult<AppointmentDto>> GetAppointmentAsync(int id) =>
+            ApiCallHelper.SendAsync<AppointmentDto>(() => _httpClient.GetAsync($"api/appointments/{id}"), _logger);
+
         public Task<ApiResult<List<AppointmentDto>>> GetAppointmentsAsync(string citizenId) =>
             ApiCallHelper.SendAsync<List<AppointmentDto>>(
                 () => _httpClient.GetAsync($"api/appointments?citizenId={Uri.EscapeDataString(citizenId)}"), _logger);
