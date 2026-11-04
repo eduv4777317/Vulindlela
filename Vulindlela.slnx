@@ -1,3 +1,6 @@
 <Solution>
-  <Project Path="Vulindlela/Vulindlela.csproj" />
+  <Project Path="Vulindlela.Booking.Api/Vulindlela.Booking.Api.csproj" />
+  <Project Path="Vulindlela.Clearance.Api/Vulindlela.Clearance.Api.csproj" />
+  <Project Path="Vulindlela.Portal.Mvc/Vulindlela.Portal.Mvc.csproj" />
+  <Project Path="Vulindlela.Tests/Vulindlela.Tests.csproj" />
 </Solution>
