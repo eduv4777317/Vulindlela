@@ -117,14 +117,28 @@ namespace Vulindlela.Booking.Api.Services
             return BookingResult.Booked(appointment);
         }
 
-        public Task<Appointment?> GetAppointmentAsync(int id)
+        public async Task<Appointment?> GetAppointmentAsync(int id, AccessContext reader)
         {
-            return _bookingRepository.GetAppointmentByIdAsync(id);
+            var appointment = await _bookingRepository.GetAppointmentByIdAsync(id);
+            if (appointment is not null)
+            {
+                await RecordReadAsync(appointment.CitizenId, reader);
+            }
+
+            return appointment;
         }
 
-        public Task<IReadOnlyList<Appointment>> GetAppointmentsForCitizenAsync(string citizenId)
+        public async Task<IReadOnlyList<Appointment>> GetAppointmentsForCitizenAsync(string citizenId, AccessContext reader)
         {
-            return _bookingRepository.GetAppointmentsForCitizenAsync(citizenId?.Trim() ?? "");
+            var normalisedCitizenId = citizenId?.Trim() ?? "";
+            var appointments = await _bookingRepository.GetAppointmentsForCitizenAsync(normalisedCitizenId);
+            await RecordReadAsync(normalisedCitizenId, reader);
+            return appointments;
+        }
+
+        public Task<IReadOnlyList<AccessLogEntry>> GetAccessLogAsync(string citizenId)
+        {
+            return _bookingRepository.GetAccessLogAsync(citizenId?.Trim() ?? "");
         }
 
         public Task<IReadOnlyList<Slot>> GetSlotsAsync(IReadOnlyCollection<int> slotIds)
@@ -154,6 +168,18 @@ namespace Vulindlela.Booking.Api.Services
             appointment.Status = AppointmentStatus.Cancelled;
             await _bookingRepository.SaveChangesAsync();
             return CancelOutcome.Cancelled;
+        }
+
+        private Task RecordReadAsync(string citizenId, AccessContext reader)
+        {
+            return _bookingRepository.AddAccessLogEntryAsync(new AccessLogEntry
+            {
+                CitizenId = citizenId,
+                AccessedBy = reader.AccessedBy,
+                AccessedByRole = reader.AccessedByRole,
+                Reason = reader.Reason,
+                AccessedAt = DateTime.UtcNow
+            });
         }
 
         private async Task<bool> IsSlotTakenAsync(int slotId)

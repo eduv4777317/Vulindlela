@@ -29,6 +29,11 @@
     return;
 }
 
+@if (Model.IsOfficial)
+{
+    <p><a asp-controller="AccessLog" asp-action="Index" asp-route-citizenId="@Model.CitizenId">View this citizen's access log</a></p>
+}
+
 @if (Model.BookingUnavailable)
 {
     <p class="notice">Your appointments are unavailable right now. Please try again in a few minutes.</p>

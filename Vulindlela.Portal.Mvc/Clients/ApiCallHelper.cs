@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Security.Claims;
 using Vulindlela.Portal.Mvc.Models;
 
 namespace Vulindlela.Portal.Mvc.Clients
@@ -26,6 +27,15 @@ namespace Vulindlela.Portal.Mvc.Clients
                 logger.LogWarning(ex, "Service call failed; showing the page without this data.");
                 return ApiResult<T>.Unavailable();
             }
+        }
+
+        public static HttpRequestMessage CreateRead(string url, ClaimsPrincipal? user, string reason)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("X-Accessed-By", Uri.EscapeDataString(user?.Identity?.Name ?? "Unknown caller"));
+            request.Headers.Add("X-Accessed-By-Role", Uri.EscapeDataString(user?.FindFirstValue(ClaimTypes.Role) ?? "Unknown"));
+            request.Headers.Add("X-Access-Reason", Uri.EscapeDataString(reason));
+            return request;
         }
 
         private static async Task<ProblemDto?> TryReadProblemAsync(HttpResponseMessage response)

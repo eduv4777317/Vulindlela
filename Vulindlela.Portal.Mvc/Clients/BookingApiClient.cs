@@ -7,11 +7,13 @@ namespace Vulindlela.Portal.Mvc.Clients
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<BookingApiClient> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public BookingApiClient(HttpClient httpClient, ILogger<BookingApiClient> logger)
+        public BookingApiClient(HttpClient httpClient, ILogger<BookingApiClient> logger, IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = httpClient;
             _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public Task<ApiResult<List<BranchDto>>> GetBranchesAsync() =>
@@ -26,11 +28,17 @@ namespace Vulindlela.Portal.Mvc.Clients
         public Task<ApiResult<AppointmentDto>> BookAsync(BookAppointmentDto request) =>
             ApiCallHelper.SendAsync<AppointmentDto>(() => _httpClient.PostAsJsonAsync("api/appointments", request), _logger);
 
-        public Task<ApiResult<AppointmentDto>> GetAppointmentAsync(int id) =>
-            ApiCallHelper.SendAsync<AppointmentDto>(() => _httpClient.GetAsync($"api/appointments/{id}"), _logger);
+        public Task<ApiResult<AppointmentDto>> GetAppointmentAsync(int id, string reason) =>
+            ApiCallHelper.SendAsync<AppointmentDto>(
+                () => _httpClient.SendAsync(ApiCallHelper.CreateRead($"api/appointments/{id}", _httpContextAccessor.HttpContext?.User, reason)), _logger);
 
-        public Task<ApiResult<List<AppointmentDto>>> GetAppointmentsAsync(string citizenId) =>
+        public Task<ApiResult<List<AppointmentDto>>> GetAppointmentsAsync(string citizenId, string reason) =>
             ApiCallHelper.SendAsync<List<AppointmentDto>>(
-                () => _httpClient.GetAsync($"api/appointments?citizenId={Uri.EscapeDataString(citizenId)}"), _logger);
+                () => _httpClient.SendAsync(ApiCallHelper.CreateRead(
+                    $"api/appointments?citizenId={Uri.EscapeDataString(citizenId)}", _httpContextAccessor.HttpContext?.User, reason)), _logger);
+
+        public Task<ApiResult<List<AccessLogEntryDto>>> GetAccessLogAsync(string citizenId) =>
+            ApiCallHelper.SendAsync<List<AccessLogEntryDto>>(
+                () => _httpClient.GetAsync($"api/access-log?citizenId={Uri.EscapeDataString(citizenId)}"), _logger);
     }
 }

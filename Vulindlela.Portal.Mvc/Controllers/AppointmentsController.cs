@@ -38,7 +38,7 @@ namespace Vulindlela.Portal.Mvc.Controllers
                 return Forbid();
             }
 
-            var appointments = await _bookingApi.GetAppointmentsAsync(requestedCitizenId);
+            var appointments = await _bookingApi.GetAppointmentsAsync(requestedCitizenId, AccessReasons.ViewedAppointments);
             if (!appointments.Succeeded)
             {
                 return View(new MyAppointmentsViewModel
@@ -55,7 +55,7 @@ namespace Vulindlela.Portal.Mvc.Controllers
             var ids = appointments.Value!.Select(a => a.Id).ToList();
             var clearances = ids.Count == 0
                 ? new ApiResult<List<ClearanceDto>>(true, new List<ClearanceDto>(), 200)
-                : await _clearanceApi.GetClearancesAsync(ids);
+                : await _clearanceApi.GetClearancesAsync(ids, AccessReasons.ViewedAppointments);
             var clearanceById = (clearances.Value ?? new List<ClearanceDto>()).ToDictionary(c => c.AppointmentId);
 
             var rows = appointments.Value!
@@ -82,7 +82,7 @@ namespace Vulindlela.Portal.Mvc.Controllers
         {
             var model = new DocumentsViewModel { AppointmentId = id };
 
-            var appointment = await _bookingApi.GetAppointmentAsync(id);
+            var appointment = await _bookingApi.GetAppointmentAsync(id, AccessReasons.OpenedDocuments);
             if (!appointment.Available)
             {
                 model.Error = "Your appointment could not be loaded right now. Please try again in a few minutes.";
@@ -98,7 +98,7 @@ namespace Vulindlela.Portal.Mvc.Controllers
             }
 
             model.CitizenId = appointment.Value.CitizenId;
-            var clearance = await _clearanceApi.GetClearanceAsync(id);
+            var clearance = await _clearanceApi.GetClearanceAsync(id, AccessReasons.OpenedDocuments);
 
             if (!clearance.Available)
             {
@@ -122,7 +122,7 @@ namespace Vulindlela.Portal.Mvc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Documents(DocumentsViewModel model)
         {
-            var appointment = await _bookingApi.GetAppointmentAsync(model.AppointmentId);
+            var appointment = await _bookingApi.GetAppointmentAsync(model.AppointmentId, AccessReasons.SubmittedDocuments);
             if (!appointment.Available)
             {
                 model.Error = "Your appointment could not be loaded right now. Please try again in a few minutes.";

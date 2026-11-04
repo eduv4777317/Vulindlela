@@ -14,6 +14,8 @@ namespace Vulindlela.Clearance.Api.Contracts
         IReadOnlyList<RequirementResponse> RequiredDocuments,
         DateTime? VerifiedAt);
 
+    public sealed record AccessLogEntryResponse(DateTimeOffset AccessedAt, string AccessedBy, string AccessedByRole, string Reason);
+
     public static class ResponseMapping
     {
         public static RequirementResponse ToResponse(this DocumentRequirement requirement) =>
@@ -21,6 +23,10 @@ namespace Vulindlela.Clearance.Api.Contracts
 
         public static SubmissionResponse ToResponse(this Submission submission) =>
             new(submission.Id, submission.AppointmentId, submission.Status.ToString());
+
+        public static AccessLogEntryResponse ToResponse(this AccessLogEntry entry) =>
+            new(new DateTimeOffset(DateTime.SpecifyKind(entry.AccessedAt, DateTimeKind.Utc)),
+                entry.AccessedBy, entry.AccessedByRole, entry.Reason);
 
         public static ClearanceResponse ToResponse(this ClearanceStatus status)
         {

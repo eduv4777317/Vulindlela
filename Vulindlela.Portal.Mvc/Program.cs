@@ -20,6 +20,7 @@ var portalConnectionString = builder.Configuration.GetConnectionString("PortalDB
     ?? throw new InvalidOperationException("Connection string 'PortalDB' is not configured.");
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddDbContext<PortalDBContext>(options =>
 {
