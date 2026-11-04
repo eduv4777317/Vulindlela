@@ -1,4 +1,11 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 using Vulindlela.Portal.Mvc.Clients;
+using Vulindlela.Portal.Mvc.Data;
+using Vulindlela.Portal.Mvc.Data.Repositories;
+using Vulindlela.Portal.Mvc.Data.Seedings;
+using Vulindlela.Portal.Mvc.Security;
+using Vulindlela.Portal.Mvc.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,8 +15,27 @@ var bookingBaseUrl = builder.Configuration["BookingApi:BaseUrl"]
     ?? throw new InvalidOperationException("Setting 'BookingApi:BaseUrl' is not configured.");
 var clearanceBaseUrl = builder.Configuration["ClearanceApi:BaseUrl"]
     ?? throw new InvalidOperationException("Setting 'ClearanceApi:BaseUrl' is not configured.");
+var portalConnectionString = builder.Configuration.GetConnectionString("PortalDB")
+    ?? throw new InvalidOperationException("Connection string 'PortalDB' is not configured.");
 
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<PortalDBContext>(options =>
+{
+    options.UseSqlite(portalConnectionString);
+});
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IPortalSeeder, PortalSeeder>();
+builder.Services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
+
+builder.Services
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/SignIn";
+    });
+builder.Services.AddAuthorization();
 
 builder.Services.AddHttpClient<IBookingApiClient, BookingApiClient>(client =>
 {
@@ -24,6 +50,15 @@ builder.Services.AddHttpClient<IClearanceApiClient, ClearanceApiClient>(client =
 
 var app = builder.Build();
 
+using (IServiceScope scope = app.Services.CreateScope())
+{
+    PortalDBContext context = scope.ServiceProvider.GetRequiredService<PortalDBContext>();
+    context.Database.EnsureCreated();
+
+    IPortalSeeder seeder = scope.ServiceProvider.GetRequiredService<IPortalSeeder>();
+    await seeder.SeedAsync();
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -33,6 +68,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

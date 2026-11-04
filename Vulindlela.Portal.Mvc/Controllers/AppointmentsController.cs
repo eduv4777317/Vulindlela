@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vulindlela.Portal.Mvc.Clients;
 using Vulindlela.Portal.Mvc.Models;
+using Vulindlela.Portal.Mvc.Security;
 
 namespace Vulindlela.Portal.Mvc.Controllers
 {
+    [Authorize]
     public class AppointmentsController : Controller
     {
         private readonly IBookingApiClient _bookingApi;
@@ -15,17 +18,13 @@ namespace Vulindlela.Portal.Mvc.Controllers
             _clearanceApi = clearanceApi;
         }
 
-        public async Task<IActionResult> Index(string? citizenId)
+        public async Task<IActionResult> Index()
         {
-            if (string.IsNullOrWhiteSpace(citizenId))
-            {
-                return View(new MyAppointmentsViewModel());
-            }
-
+            var citizenId = User.GetCitizenId()!;
             var appointments = await _bookingApi.GetAppointmentsAsync(citizenId);
             if (!appointments.Succeeded)
             {
-                return View(new MyAppointmentsViewModel { CitizenId = citizenId, BookingUnavailable = true });
+                return View(new MyAppointmentsViewModel { BookingUnavailable = true });
             }
 
             var branches = await _bookingApi.GetBranchesAsync();
@@ -49,16 +48,15 @@ namespace Vulindlela.Portal.Mvc.Controllers
 
             return View(new MyAppointmentsViewModel
             {
-                CitizenId = citizenId,
                 ClearanceUnavailable = !clearances.Succeeded,
                 Rows = rows
             });
         }
 
         [HttpGet]
-        public async Task<IActionResult> Documents(int id, string citizenId)
+        public async Task<IActionResult> Documents(int id)
         {
-            var model = new DocumentsViewModel { AppointmentId = id, CitizenId = citizenId };
+            var model = new DocumentsViewModel { AppointmentId = id };
             var clearance = await _clearanceApi.GetClearanceAsync(id);
 
             if (!clearance.Available)
@@ -92,7 +90,7 @@ namespace Vulindlela.Portal.Mvc.Controllers
             if (result.Succeeded)
             {
                 TempData["Message"] = "Your documents were received and are being checked. This page updates by itself.";
-                return RedirectToAction(nameof(Index), new { citizenId = model.CitizenId });
+                return RedirectToAction(nameof(Index));
             }
 
             model.ClearanceUnavailable = !result.Available;

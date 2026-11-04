@@ -21,9 +21,6 @@ else
         <input type="hidden" asp-for="BranchId" />
         <input type="hidden" asp-for="StartsAt" />
 
-        <label asp-for="CitizenId">South African ID number</label>
-        <input asp-for="CitizenId" maxlength="13" required />
-
         <label asp-for="ServiceType">Service</label>
         <select asp-for="ServiceType" required>
             @foreach (var serviceType in Model.ServiceTypes)

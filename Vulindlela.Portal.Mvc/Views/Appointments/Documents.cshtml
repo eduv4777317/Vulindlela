@@ -17,7 +17,6 @@
 {
     <form asp-action="Documents" method="post">
         <input type="hidden" asp-for="AppointmentId" />
-        <input type="hidden" asp-for="CitizenId" />
         <table>
             <thead>
                 <tr><th>I have it</th><th>Document</th><th>Certified on</th><th>Expires on</th></tr>
@@ -51,4 +50,4 @@
     </form>
 }
 
-<p><a asp-action="Index" asp-route-citizenId="@Model.CitizenId">Back to my appointments</a></p>
+<p><a asp-action="Index">Back to my appointments</a></p>

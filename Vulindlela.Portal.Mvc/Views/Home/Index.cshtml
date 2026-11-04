@@ -5,5 +5,12 @@
 <p>Book a counter slot at a branch, then send your supporting documents in advance. We tell you before you travel whether anything is missing, expired or certified too long ago.</p>
 <p>
     <a class="button" asp-controller="Booking" asp-action="Index">Book a slot</a>
-    <a class="button secondary" asp-controller="Appointments" asp-action="Index">My appointments</a>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a class="button secondary" asp-controller="Appointments" asp-action="Index">My appointments</a>
+    }
+    else
+    {
+        <a class="button secondary" asp-controller="Account" asp-action="SignIn">Sign in</a>
+    }
 </p>

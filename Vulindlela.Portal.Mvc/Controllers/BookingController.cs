@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vulindlela.Portal.Mvc.Clients;
 using Vulindlela.Portal.Mvc.Models;
+using Vulindlela.Portal.Mvc.Security;
 
 namespace Vulindlela.Portal.Mvc.Controllers
 {
@@ -47,6 +49,7 @@ namespace Vulindlela.Portal.Mvc.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Book(int slotId, int branchId, DateTimeOffset startsAt)
         {
             var model = new BookViewModel { SlotId = slotId, BranchId = branchId, StartsAt = startsAt };
@@ -56,9 +59,11 @@ namespace Vulindlela.Portal.Mvc.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Book(BookViewModel model)
         {
-            var result = await _bookingApi.BookAsync(new BookAppointmentDto(model.SlotId, model.CitizenId, model.ServiceType));
+            var citizenId = User.GetCitizenId()!;
+            var result = await _bookingApi.BookAsync(new BookAppointmentDto(model.SlotId, citizenId, model.ServiceType));
 
             if (result.Succeeded)
             {

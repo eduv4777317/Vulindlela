@@ -187,3 +187,27 @@ dt {
 dd {
     margin: 0 0 0.5rem;
 }
+
+header .signed-in {
+    color: #d9f2e6;
+}
+
+header .nav-form {
+    margin: 0;
+}
+
+header button.link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.field-error {
+    display: block;
+    color: var(--warn-ink);
+    font-size: 0.875rem;
+}

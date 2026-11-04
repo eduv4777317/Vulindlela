@@ -12,7 +12,19 @@
         <nav>
             <a class="brand" asp-controller="Home" asp-action="Index">Vulindlela</a>
             <a asp-controller="Booking" asp-action="Index">Book a slot</a>
-            <a asp-controller="Appointments" asp-action="Index">My appointments</a>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="Appointments" asp-action="Index">My appointments</a>
+                <span class="signed-in">@User.Identity.Name</span>
+                <form asp-controller="Account" asp-action="SignOut" method="post" class="nav-form">
+                    <button type="submit" class="link">Sign out</button>
+                </form>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="SignIn">Sign in</a>
+                <a asp-controller="Account" asp-action="Register">Register</a>
+            }
         </nav>
     </header>
     <main>

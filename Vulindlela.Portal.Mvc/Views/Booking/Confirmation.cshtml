@@ -15,8 +15,6 @@
 </dl>
 <p>Next, send your documents so we can tell you before you travel whether anything is missing.</p>
 <p>
-    <a class="button" asp-controller="Appointments" asp-action="Documents" asp-route-id="@Model.Appointment.Id"
-       asp-route-citizenId="@Model.Appointment.CitizenId">Submit documents</a>
-    <a class="button secondary" asp-controller="Appointments" asp-action="Index"
-       asp-route-citizenId="@Model.Appointment.CitizenId">My appointments</a>
+    <a class="button" asp-controller="Appointments" asp-action="Documents" asp-route-id="@Model.Appointment.Id">Submit documents</a>
+    <a class="button secondary" asp-controller="Appointments" asp-action="Index">My appointments</a>
 </p>
